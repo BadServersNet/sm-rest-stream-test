@@ -231,7 +231,7 @@ public Action OnHeadersReceived(RESTClient client, RESTResponse response, any da
     float contentMiB = ToMiB(g_iContentLength);
 
     strcopy(g_sPhase, sizeof(g_sPhase), "Headers received, streaming body");
-    Report("Headers received. HTTP status: %d, Content-Length: %d (%.2f MiB)", response.HttpStatus, g_iContentLength, contentMiB);
+    Report("Headers received. HTTP status: %d, Content-Length: %d (%.2f MiB, -1 means chunked or unknown)", response.HttpStatus, g_iContentLength, contentMiB);
 
     return Plugin_Continue;
 }
@@ -349,7 +349,7 @@ public void OnRequestCompleted(RESTClient client, RESTResponse response, any dat
         return;
     }
 
-    bool sizeMatches = g_iContentLength == 0 || g_iContentLength == g_iBytesReceived;
+    bool sizeMatches = g_iContentLength <= 0 || g_iContentLength == g_iBytesReceived;
     bool fileMatches = fileSize == g_iBytesReceived;
 
     char sizeMatchLabel[8];

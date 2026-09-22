@@ -170,7 +170,7 @@ methodmap RESTRequest < Handle
 		public native set(int value);
 	}
 
-	// Receive buffer size in bytes (1024 to 10 MiB), which bounds the size of each OnData chunk.
+	// Receive buffer size in bytes (1024 to 10 MiB). Streamed data is coalesced to this size before each OnData call.
 	property int ChunkSize
 	{
 		public native get();
@@ -267,7 +267,7 @@ methodmap RESTClient < Handle
 		public native set(int value);
 	}
 
-	// Receive buffer size in bytes (1024 to 10 MiB), which bounds the size of each OnData chunk.
+	// Receive buffer size in bytes (1024 to 10 MiB). Streamed data is coalesced to this size before each OnData call.
 	property int ChunkSize
 	{
 		public native get();
