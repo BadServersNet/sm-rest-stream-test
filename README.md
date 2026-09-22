@@ -44,4 +44,8 @@ sm_streamtest_file "https://ash-speed.hetzner.com/1GB.bin"
 
 Copy `rest.ext.so` to `addons/sourcemod/extensions/`, `ca-bundle.crt` to `addons/sourcemod/configs/rest/` and `rest-stream-test.smx` to `addons/sourcemod/plugins/`, then `sm plugins load rest-stream-test`. The extension loads with the plugin.
 
+## Test results
+
+On Dev CSGO with sm-rest `8d3c470`, `sm_streamtest` streamed the 1 GiB Hetzner file to disk through the data callback in 1024 chunks of 1 MiB in 16.9 s (60 MB/s), and the on-disk size matched the bytes received. The same file with 16 KiB chunks took 65537 callbacks at 62 MB/s, so the transfer is network-bound and the chunk size only changes callback overhead. SteamWorks managed 6.9 MB/s on the same server. The full console output is in the sm-rest README.
+
 Pass URLs from the server console in quotes; the Source console tokenizer splits on `:` otherwise.

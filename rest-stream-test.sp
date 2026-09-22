@@ -238,13 +238,14 @@ public Action OnHeadersReceived(RESTClient client, RESTResponse response, any da
 
 public void OnProgress(RESTClient client, int downloaded, int downloadTotal, int uploaded, int uploadTotal, any data)
 {
+    g_iProgressUpdates++;
+
     if (g_eMode != StreamMode_File)
     {
         return;
     }
 
     g_iBytesReceived = downloaded;
-    g_iProgressUpdates++;
 
     if (g_iContentLength <= 0)
     {
