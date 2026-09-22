@@ -177,6 +177,13 @@ methodmap RESTRequest < Handle
 		public native set(int value);
 	}
 
+	// Minimum milliseconds between OnProgress calls. Default 100. Completion of either direction is always reported.
+	property int ProgressInterval
+	{
+		public native get();
+		public native set(int value);
+	}
+
 	property bool FollowRedirects
 	{
 		public native get();
@@ -267,6 +274,13 @@ methodmap RESTClient < Handle
 		public native set(int value);
 	}
 
+	// Minimum milliseconds between OnProgress calls. Default 100. Completion of either direction is always reported.
+	property int ProgressInterval
+	{
+		public native get();
+		public native set(int value);
+	}
+
 	property bool FollowRedirects
 	{
 		public native get();
@@ -331,6 +345,8 @@ public void __ext_rest_SetNTVOptional()
 	MarkNativeAsOptional("RESTClient.MaxBodySize.set");
 	MarkNativeAsOptional("RESTClient.ChunkSize.get");
 	MarkNativeAsOptional("RESTClient.ChunkSize.set");
+	MarkNativeAsOptional("RESTClient.ProgressInterval.get");
+	MarkNativeAsOptional("RESTClient.ProgressInterval.set");
 	MarkNativeAsOptional("RESTClient.FollowRedirects.get");
 	MarkNativeAsOptional("RESTClient.FollowRedirects.set");
 	MarkNativeAsOptional("RESTClient.VerifyCertificate.get");
@@ -361,6 +377,8 @@ public void __ext_rest_SetNTVOptional()
 	MarkNativeAsOptional("RESTRequest.MaxBodySize.set");
 	MarkNativeAsOptional("RESTRequest.ChunkSize.get");
 	MarkNativeAsOptional("RESTRequest.ChunkSize.set");
+	MarkNativeAsOptional("RESTRequest.ProgressInterval.get");
+	MarkNativeAsOptional("RESTRequest.ProgressInterval.set");
 	MarkNativeAsOptional("RESTRequest.FollowRedirects.get");
 	MarkNativeAsOptional("RESTRequest.FollowRedirects.set");
 	MarkNativeAsOptional("RESTRequest.VerifyCertificate.get");

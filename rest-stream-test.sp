@@ -33,6 +33,7 @@ enum StreamMode
 
 ConVar g_cvUrl;
 ConVar g_cvChunkSize;
+ConVar g_cvProgressInterval;
 RESTClient g_hClient;
 File g_hOutputFile;
 Handle g_hStatusTimer;
@@ -44,6 +45,7 @@ int g_iContentLength;
 int g_iChunkCount;
 int g_iLastChunkSize;
 int g_iLargestChunkSize;
+int g_iProgressUpdates;
 float g_fStartTime;
 bool g_bCompleted;
 int g_iRequesterUserId;
@@ -53,6 +55,7 @@ public void OnPluginStart()
 {
     g_cvUrl = CreateConVar("sm_streamtest_url", DEFAULT_URL, "URL of the test binary to download with the sm-rest streaming API.");
     g_cvChunkSize = CreateConVar("sm_streamtest_chunk_size", "1048576", "Receive buffer size in bytes, which bounds the size of each data callback chunk.", _, true, float(MIN_CHUNK_SIZE), true, float(CHUNK_BUFFER_SIZE));
+    g_cvProgressInterval = CreateConVar("sm_streamtest_progress_interval", "100", "Minimum milliseconds between progress callbacks.", _, true, 0.0, true, 10000.0);
     RegAdminCmd("sm_streamtest", Command_StreamTest, ADMFLAG_ROOT, "[url] Streams a test binary to disk through the OnData callback.");
     RegAdminCmd("sm_streamtest_file", Command_StreamTestFile, ADMFLAG_ROOT, "[url] Streams a test binary to disk through SetOutputFile.");
     RegAdminCmd("sm_streamtest_cancel", Command_StreamTestCancel, ADMFLAG_ROOT, "Cancels the running streaming download.");
@@ -122,9 +125,11 @@ void StartDownload(int client, int args, StreamMode mode)
     }
 
     int chunkSize = g_cvChunkSize.IntValue;
+    int progressInterval = g_cvProgressInterval.IntValue;
 
     RESTRequest request = g_hClient.Request(RESTMethod_Get, url);
     request.ChunkSize = chunkSize;
+    request.ProgressInterval = progressInterval;
     request.OnHeaders(OnHeadersReceived);
     request.OnProgress(OnProgress);
 
@@ -149,7 +154,7 @@ void StartDownload(int client, int args, StreamMode mode)
 
     char modeLabel[16];
     ModeLabel(mode, modeLabel, sizeof(modeLabel));
-    Report("Streaming download started (%s, chunk size %d): %s -> %s (request %d)", modeLabel, chunkSize, url, outputPath, g_iRequestId);
+    Report("Streaming download started (%s, chunk size %d, progress interval %dms): %s -> %s (request %d)", modeLabel, chunkSize, progressInterval, url, outputPath, g_iRequestId);
 }
 
 void ModeLabel(StreamMode mode, char[] buffer, int maxlength)
@@ -209,6 +214,7 @@ void ResetProgress()
     g_iChunkCount = 0;
     g_iLastChunkSize = 0;
     g_iLargestChunkSize = 0;
+    g_iProgressUpdates = 0;
     g_fStartTime = GetEngineTime();
     g_bCompleted = false;
 }
@@ -238,6 +244,7 @@ public void OnProgress(RESTClient client, int downloaded, int downloadTotal, int
     }
 
     g_iBytesReceived = downloaded;
+    g_iProgressUpdates++;
 
     if (g_iContentLength <= 0)
     {
@@ -351,7 +358,7 @@ public void OnRequestCompleted(RESTClient client, RESTResponse response, any dat
     char fileMatchLabel[8];
     YesNo(fileMatches, fileMatchLabel, sizeof(fileMatchLabel));
 
-    Report("Download COMPLETE. HTTP status: %d, received %.2f / %.2f MiB in %d chunks (largest %d bytes), file on disk %d bytes (match: %s), matches Content-Length: %s, time %.1fs (%.2f MB/s, extension reported %dms)", response.HttpStatus, receivedMiB, contentMiB, g_iChunkCount, g_iLargestChunkSize, fileSize, fileMatchLabel, sizeMatchLabel, elapsed, speed, response.ElapsedMs);
+    Report("Download COMPLETE. HTTP status: %d, received %.2f / %.2f MiB in %d chunks (largest %d bytes) with %d progress updates, file on disk %d bytes (match: %s), matches Content-Length: %s, time %.1fs (%.2f MB/s, extension reported %dms)", response.HttpStatus, receivedMiB, contentMiB, g_iChunkCount, g_iLargestChunkSize, g_iProgressUpdates, fileSize, fileMatchLabel, sizeMatchLabel, elapsed, speed, response.ElapsedMs);
 }
 
 void YesNo(bool value, char[] buffer, int maxlength)
@@ -405,7 +412,7 @@ void ShowStatus()
     FormatSizeLine(receivedMiB, sizeLine, sizeof(sizeLine));
 
     char message[256];
-    Format(message, sizeof(message), "%s | %s | chunks %d (last %d bytes) | %.1fs (%.2f MB/s)", g_sPhase, sizeLine, g_iChunkCount, g_iLastChunkSize, elapsed, speed);
+    Format(message, sizeof(message), "%s | %s | chunks %d (last %d bytes) | progress updates %d | %.1fs (%.2f MB/s)", g_sPhase, sizeLine, g_iChunkCount, g_iLastChunkSize, g_iProgressUpdates, elapsed, speed);
 
     PrintToServer("[StreamTest] %s", message);
 

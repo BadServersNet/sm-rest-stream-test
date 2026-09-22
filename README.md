@@ -18,7 +18,7 @@ sm_streamtest "https://ash-speed.hetzner.com/1GB.bin"
 sm_streamtest_file "https://ash-speed.hetzner.com/1GB.bin"
 ```
 
-`sm_streamtest_file` skips the plugin heap entirely because the extension writes the file, so it is the upper bound for the data callback path.
+`sm_streamtest_file` skips the plugin heap entirely because the extension writes the file, so it is the upper bound for the data callback path. It still receives status through `OnProgress`: the extension samples progress on its worker thread and posts a small event to the main thread at most once per `sm_streamtest_progress_interval` milliseconds, so the console shows live percentage and speed without any body bytes crossing into the plugin. The completion line reports how many progress updates arrived.
 
 ## Commands
 
@@ -34,6 +34,7 @@ sm_streamtest_file "https://ash-speed.hetzner.com/1GB.bin"
 | --- | --- | --- |
 | `sm_streamtest_url` | `https://ash-speed.hetzner.com/1GB.bin` | Default test binary URL (1 GB). |
 | `sm_streamtest_chunk_size` | `1048576` | Receive buffer size in bytes (1024 to 2097152). |
+| `sm_streamtest_progress_interval` | `100` | Minimum milliseconds between progress callbacks (0 to 10000). |
 
 ## Requirements
 
